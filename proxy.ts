@@ -35,14 +35,6 @@ export async function proxy(request: NextRequest) {
     return supabaseResponse
   }
 
-  // Redirect to login if not authenticated
-  if (!user) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    url.searchParams.set('next', pathname)
-    return NextResponse.redirect(url)
-  }
-
   // Redirect root to first pipe
   if (pathname === '/') {
     const url = request.nextUrl.clone()

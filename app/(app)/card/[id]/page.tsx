@@ -9,6 +9,15 @@ interface Props {
   params: Promise<{ id: string }>
 }
 
+interface CardResult extends Database['public']['Tables']['cards']['Row'] {
+  pipes: Database['public']['Tables']['pipes']['Row'];
+  pipe_fields: (Database['public']['Tables']['pipe_fields']['Row'] & {
+    field_conditionals: Database['public']['Tables']['field_conditionals']['Row'][]
+  })[];
+  phases: Database['public']['Tables']['phases']['Row'];
+  card_activities: Database['public']['Tables']['card_activities']['Row'][]
+}
+
 async function getCardData(supabase: SupabaseClient<Database>, id: string) {
   try {
     const { data, error } = await supabase
@@ -42,13 +51,13 @@ async function getCardData(supabase: SupabaseClient<Database>, id: string) {
       return null;
     }
 
-    const card = data as any;
+    const card = data as CardResult;
 
     return {
       card: card,
       fields: card.pipe_fields || [],
       phases: card.phases || [],
-      conditionals: card.pipe_fields?.flatMap((field: any) => field.field_conditionals) || [],
+      conditionals: card.pipe_fields?.flatMap(field => field.field_conditionals) || [],
       activities: card.card_activities || [],
     };
   } catch (error: any) {
@@ -71,11 +80,11 @@ export default async function CardPage({ params }: Props) {
 
     return (
       <CardDetail
-        card={card as Card}
-        fields={fields as PipeField[]}
-        phases={phases as Phase[]}
-        conditionals={conditionals as FieldConditional[]}
-        activities={activities as CardActivity[]}
+        card={card}
+        fields={fields}
+        phases={phases}
+        conditionals={conditionals}
+        activities={activities}
       />
     )
   } catch (error: any) {

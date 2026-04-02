@@ -44,7 +44,11 @@ export default async function PipePage({ params }: Props) {
 
   if (phasesError || cardsError || fieldsError) {
     console.error("Error fetching data:", phasesError, cardsError, fieldsError);
-    return null;
+    return (
+      <div>
+        <p>Erro ao carregar os dados do pipe. Por favor, tente novamente mais tarde.</p>
+      </div>
+    );
   }
 
   const boardData: BoardData = {

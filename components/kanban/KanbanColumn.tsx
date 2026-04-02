@@ -15,11 +15,11 @@ interface Props {
 }
 
 export function KanbanColumn({ phase, cards, fields, pipeId }: Props) {
+  // The droppable id matches phase.id so DndContext can identify the column
   const { setNodeRef, isOver } = useDroppable({ id: phase.id })
 
   return (
     <div className="flex flex-col flex-shrink-0 w-[300px]">
-      {/* Column header */}
       <div className="flex items-center justify-between mb-2 px-0.5">
         <div className="flex items-center gap-1.5 min-w-0">
           {phase.is_standby && <span className="text-amber-500 text-xs">⏸</span>}
@@ -33,7 +33,6 @@ export function KanbanColumn({ phase, cards, fields, pipeId }: Props) {
         </span>
       </div>
 
-      {/* Drop zone */}
       <div
         ref={setNodeRef}
         className={cn(
@@ -41,7 +40,13 @@ export function KanbanColumn({ phase, cards, fields, pipeId }: Props) {
           isOver ? 'bg-accent/60 ring-2 ring-primary/30' : 'bg-muted/40'
         )}
       >
-        <SortableContext items={cards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
+        {/* SortableContext gets the current column's card IDs.
+            When onDragOver moves a card here, the IDs list updates and
+            verticalListSortingStrategy shifts the other cards to make room. */}
+        <SortableContext
+          items={cards.map((c) => c.id)}
+          strategy={verticalListSortingStrategy}
+        >
           <div className="flex flex-col gap-2 p-2 flex-1">
             {cards.map((card) => (
               <KanbanCard key={card.id} card={card} fields={fields} />

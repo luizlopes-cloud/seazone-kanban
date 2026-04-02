@@ -39,9 +39,14 @@ function relativeTime(dateStr: string): string {
 }
 
 export function KanbanCard({ card, fields, isDragging }: Props) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging: isSortableDragging } = useSortable({
-    id: card.id,
-  })
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging: isSortableDragging,
+  } = useSortable({ id: card.id })
 
   const style = { transform: CSS.Transform.toString(transform), transition }
 
@@ -64,17 +69,15 @@ export function KanbanCard({ card, fields, isDragging }: Props) {
       {...listeners}
       className={cn(
         'group relative bg-card rounded-xl border border-border cursor-grab active:cursor-grabbing select-none',
-        'shadow-sm hover:shadow-[0_8px_24px_-8px_rgba(20,29,46,0.15)] transition-all duration-150',
-        (isDragging || isSortableDragging) && 'opacity-40 shadow-lg rotate-1',
+        'shadow-sm hover:shadow-[0_8px_24px_-8px_rgba(20,29,46,0.15)] transition-shadow duration-150',
+        (isDragging || isSortableDragging) && 'opacity-40',
       )}
     >
-      {/* Standby left bar */}
       {card.is_standby && (
         <div className="absolute left-0 top-3 bottom-3 w-[3px] rounded-r-full bg-amber-400" />
       )}
 
       <div className="p-3.5 pl-4">
-        {/* Top row: code + city tag */}
         <div className="flex items-center gap-1.5 mb-2 flex-wrap">
           {codigo && (
             <span className="text-[11px] font-mono font-semibold bg-muted text-muted-foreground rounded-md px-1.5 py-0.5">
@@ -98,12 +101,10 @@ export function KanbanCard({ card, fields, isDragging }: Props) {
           )}
         </div>
 
-        {/* Title */}
         <p className="text-[14px] font-semibold text-foreground leading-snug line-clamp-2 mb-2">
           {card.title}
         </p>
 
-        {/* Anfitrião */}
         {anfitriao && (
           <div className="flex items-center gap-1.5 mb-2">
             <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary shrink-0">
@@ -113,7 +114,6 @@ export function KanbanCard({ card, fields, isDragging }: Props) {
           </div>
         )}
 
-        {/* Footer: validade + updated_at */}
         <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/60 gap-2">
           <div className="flex items-center gap-1 min-w-0">
             {validade ? (

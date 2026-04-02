@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import type { PipeField, FieldOption } from '@/types/domain'
+import { ConnectorField } from './ConnectorField'
 
 interface Props {
   field: PipeField
@@ -147,6 +148,16 @@ export function FieldRenderer({ field, value, onChange, disabled }: Props) {
     }
 
     case 'connector':
+      if (field.connector_pipe_id) {
+        return (
+          <ConnectorField
+            connectorPipeId={field.connector_pipe_id}
+            value={value}
+            onChange={onChange}
+            disabled={disabled}
+          />
+        )
+      }
       return (
         <Input
           value={strValue}

@@ -43,10 +43,22 @@ export default async function PipePage({ params }: Props) {
   ])
 
   if (phasesError || cardsError || fieldsError) {
-    console.error("Error fetching data:", phasesError, cardsError, fieldsError);
+    console.error("Error fetching data:", { phasesError, cardsError, fieldsError });
+    let errorMessage = "Erro ao carregar os dados do pipe. Por favor, tente novamente mais tarde.";
+
+    if (phasesError) {
+      errorMessage += ` Detalhes do erro nas fases: ${phasesError.message || phasesError.details || 'Erro desconhecido'}.`;
+    }
+    if (cardsError) {
+      errorMessage += ` Detalhes do erro nos cards: ${cardsError.message || cardsError.details || 'Erro desconhecido'}.`;
+    }
+    if (fieldsError) {
+      errorMessage += ` Detalhes do erro nos campos: ${fieldsError.message || fieldsError.details || 'Erro desconhecido'}.`;
+    }
+
     return (
       <div>
-        <p>Erro ao carregar os dados do pipe. Por favor, tente novamente mais tarde.</p>
+        <p>{errorMessage}</p>
       </div>
     );
   }

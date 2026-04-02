@@ -18,18 +18,17 @@ export function KanbanColumn({ phase, cards, fields, pipeId }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id: phase.id })
 
   return (
-    <div className="flex flex-col flex-shrink-0 w-64">
+    <div className="flex flex-col flex-shrink-0 w-[260px]">
       {/* Column header */}
-      <div className="flex items-center justify-between mb-2 px-1">
-        <div className="flex items-center gap-2 min-w-0">
-          {phase.is_standby && (
-            <span className="text-yellow-500 text-xs">⏸</span>
-          )}
-          <span className="text-sm font-medium truncate text-foreground">
+      <div className="flex items-center justify-between mb-2 px-0.5">
+        <div className="flex items-center gap-1.5 min-w-0">
+          {phase.is_standby && <span className="text-amber-500 text-xs">⏸</span>}
+          {phase.is_done && <span className="text-emerald-500 text-xs">✓</span>}
+          <span className="text-[13px] font-semibold truncate text-foreground">
             {phase.name}
           </span>
         </div>
-        <span className="text-xs text-muted-foreground bg-muted rounded-full px-2 py-0.5 shrink-0">
+        <span className="text-[11px] font-medium text-muted-foreground bg-muted rounded-full px-2 py-0.5 shrink-0 ml-2">
           {cards.length}
         </span>
       </div>
@@ -38,10 +37,8 @@ export function KanbanColumn({ phase, cards, fields, pipeId }: Props) {
       <div
         ref={setNodeRef}
         className={cn(
-          'flex-1 rounded-lg border-2 border-dashed transition-colors min-h-[120px] flex flex-col',
-          isOver
-            ? 'border-primary/60 bg-primary/5'
-            : 'border-border/40 bg-card/30'
+          'flex-1 rounded-xl transition-colors min-h-[80px] flex flex-col',
+          isOver ? 'bg-accent/60 ring-2 ring-primary/30' : 'bg-muted/40'
         )}
       >
         <SortableContext items={cards.map((c) => c.id)} strategy={verticalListSortingStrategy}>

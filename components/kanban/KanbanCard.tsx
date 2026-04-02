@@ -4,7 +4,6 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
-import { Badge } from '@/components/ui/badge'
 import type { Card, PipeField } from '@/types/domain'
 
 interface Props {
@@ -26,6 +25,8 @@ export function KanbanCard({ card, fields, isDragging }: Props) {
   const codigoField = fields.find((f) => f.key === 'codigo_imovel')
   const codigo = codigoField ? (card.fields[codigoField.key] as string) : null
 
+  const isOverdue = card.due_date && new Date(card.due_date) < new Date()
+
   return (
     <div
       ref={setNodeRef}
@@ -33,42 +34,51 @@ export function KanbanCard({ card, fields, isDragging }: Props) {
       {...attributes}
       {...listeners}
       className={cn(
-        'group relative bg-card border rounded-lg p-3 cursor-grab active:cursor-grabbing transition-shadow select-none',
-        (isDragging || isSortableDragging) && 'opacity-50 shadow-lg',
-        'hover:shadow-md hover:border-border'
+        'group relative bg-card rounded-xl border border-border cursor-grab active:cursor-grabbing select-none',
+        'shadow-sm hover:shadow-md transition-all duration-150',
+        (isDragging || isSortableDragging) && 'opacity-40 shadow-lg rotate-1',
       )}
     >
-      {/* Standby badge */}
+      {/* Left accent bar for standby */}
       {card.is_standby && (
-        <Badge variant="outline" className="absolute top-2 right-2 text-xs text-yellow-500 border-yellow-500/40 py-0">
-          Stand-by
-        </Badge>
+        <div className="absolute left-0 top-2 bottom-2 w-0.5 rounded-full bg-amber-400" />
       )}
 
-      {/* Title */}
-      <p className="text-sm font-medium text-foreground leading-snug pr-2 line-clamp-2">
-        {card.title}
-      </p>
-
-      {/* Code */}
-      {codigo && (
-        <p className="text-xs text-muted-foreground mt-1">{codigo}</p>
-      )}
-
-      {/* Due date */}
-      {card.due_date && (
-        <p className={cn(
-          'text-xs mt-1.5',
-          new Date(card.due_date) < new Date() ? 'text-destructive' : 'text-muted-foreground'
-        )}>
-          {new Date(card.due_date).toLocaleDateString('pt-BR')}
+      <div className="p-3">
+        {/* Title */}
+        <p className="text-[13px] font-medium text-foreground leading-snug line-clamp-2">
+          {card.title}
         </p>
-      )}
 
-      {/* Link to detail (click, not drag) */}
+        {/* Code tag */}
+        {codigo && (
+          <span className="inline-block mt-1.5 text-[11px] font-mono bg-muted text-muted-foreground rounded px-1.5 py-0.5">
+            {codigo}
+          </span>
+        )}
+
+        {/* Footer row */}
+        {(card.due_date || card.is_standby) && (
+          <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/60">
+            {card.due_date && (
+              <span className={cn(
+                'text-[11px] flex items-center gap-1',
+                isOverdue ? 'text-destructive font-medium' : 'text-muted-foreground'
+              )}>
+                {isOverdue ? '⚠' : '📅'} {new Date(card.due_date).toLocaleDateString('pt-BR')}
+              </span>
+            )}
+            {card.is_standby && (
+              <span className="text-[11px] text-amber-600 font-medium ml-auto">Stand-by</span>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Invisible link overlay */}
       <Link
         href={`/card/${card.id}`}
-        className="absolute inset-0 rounded-lg"
+        className="absolute inset-0 rounded-xl"
         onClick={(e) => e.stopPropagation()}
         onMouseDown={(e) => e.stopPropagation()}
         onPointerDown={(e) => e.stopPropagation()}

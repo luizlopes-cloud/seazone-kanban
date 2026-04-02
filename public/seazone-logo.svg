@@ -1,0 +1,6 @@
+<svg width="120" height="32" viewBox="0 0 120 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Wave mark -->
+  <path d="M4 20 Q8 12 12 20 Q16 28 20 20 Q24 12 28 20" stroke="#0057D5" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <!-- seazone text -->
+  <text x="36" y="22" font-family="Geist, Inter, sans-serif" font-size="14" font-weight="700" letter-spacing="-0.3" fill="#141D2E">seazone</text>
+</svg>

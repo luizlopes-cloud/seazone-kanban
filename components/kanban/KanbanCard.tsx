@@ -48,7 +48,7 @@ export function KanbanCard({ card, fields, isDragging }: Props) {
   const f = (...keys: string[]) => { for (const k of keys) { const v = card.fields[k]; if (v) return String(v) } return undefined }
 
   const codigo    = f('im_vel', 'c_digo_do_im_vel', 'codigo_imovel')
-  const anfitriao = f('anfitri_o_respons_vel', 'datas_dispon_veis', 'nome_proprietario')
+  const anfitriao = f('anfitri_o', 'anfitri_o_respons_vel', 'nome_do_propriet_rio', 'datas_dispon_veis', 'nome_proprietario')
   const cidade    = f('cidade', 'location')
   const etiqueta  = f('etiqueta')
   const validade  = f('validade')

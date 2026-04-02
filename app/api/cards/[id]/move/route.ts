@@ -3,8 +3,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { runAutomations } from '@/lib/automation/engine'
 import { revalidatePath } from 'next/cache'
 
-export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
+export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+  const { id } = params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     type: 'card_moved',
     card,
     oldCard: currentCard,
-    fromPhaseId: currentCard.phase_id ?? undefined,
+    fromPhaseId: currentCard.phase_id,
     toPhaseId,
     userId: user.id,
   }, supabase)

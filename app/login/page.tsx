@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,7 +14,7 @@ function LoginForm() {
   const [sent, setSent] = useState(false)
   const [error, setError] = useState('')
   const searchParams = useSearchParams()
-  const next = searchParams.get('next') ?? '/pipe/onboarding'
+  const next = useRef(searchParams.get('next') ?? '/pipe/onboarding').current;
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {

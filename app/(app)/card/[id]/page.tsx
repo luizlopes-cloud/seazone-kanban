@@ -10,83 +10,51 @@ interface Props {
 }
 
 async function getCardData(supabase: SupabaseClient<Database>, id: string) {
-  const { data: card, error: cardError } = await supabase
-    .from('cards')
-    .select('*')
-    .eq('id', id)
-    .single()
+  try {
+    const { data, error } = await supabase
+      .from('cards')
+      .select(`
+        *,
+        pipes (
+          id,
+          name
+        ),
+        pipe_fields (
+          *,
+          field_conditionals (*)
+        ),
+        phases (
+          *
+        ),
+        card_activities (
+          *
+        )
+      `)
+      .eq('id', id)
+      .single();
 
-  if (cardError) {
-    console.error("Error fetching card:", cardError)
-    return null;
+    if (error) {
+      console.error("Error fetching card data:", error);
+      throw error;
+    }
+
+    if (!data) {
+      return null;
+    }
+
+    const card = data as any;
+
+    return {
+      card: card,
+      fields: card.pipe_fields || [],
+      phases: card.phases || [],
+      conditionals: card.pipe_fields?.flatMap((field: any) => field.field_conditionals) || [],
+      activities: card.card_activities || [],
+    };
+  } catch (error: any) {
+    console.error("Error in getCardData:", error);
+    throw new Error(`Failed to fetch card data: ${error.message}`);
   }
-
-  if (!card) return null;
-
-  const { data: pipeData, error: pipeError } = await supabase
-    .from('pipes')
-    .select('id, name')
-    .eq('id', card.pipe_id)
-    .single();
-
-  if (pipeError) {
-    console.error("Error fetching pipe:", pipeError);
-    return null;
-  }
-
-  if (!pipeData) return null;
-
-  const { data: fields, error: fieldsError } = await supabase
-    .from('pipe_fields')
-    .select('*')
-    .eq('pipe_id', card.pipe_id)
-    .order('position');
-
-  if (fieldsError) {
-    console.error("Error fetching pipe fields:", fieldsError);
-    return null;
-  }
-
-  const { data: phases, error: phasesError } = await supabase
-    .from('phases')
-    .select('*')
-    .eq('pipe_id', card.pipe_id)
-    .order('position');
-
-  if (phasesError) {
-    console.error("Error fetching phases:", phasesError);
-    return null;
-  }
-
-  const { data: conditionals, error: conditionalsError } = await supabase
-    .from('field_conditionals')
-    .select('*')
-    .eq('pipe_id', card.pipe_id);
-
-  if (conditionalsError) {
-    console.error("Error fetching field conditionals:", conditionalsError);
-    return null;
-  }
-
-  const { data: activities, error: activitiesError } = await supabase
-    .from('card_activities')
-    .select('*')
-    .eq('card_id', id)
-    .order('created_at', { ascending: false })
-    .limit(50);
-
-  if (activitiesError) {
-    console.error("Error fetching card activities:", activitiesError);
-    return null;
-  }
-
-  return {
-    card,
-    fields: fields || [],
-    phases: phases || [],
-    conditionals: conditionals || [],
-    activities: activities || [],
-  };
 }
 
 
@@ -94,19 +62,24 @@ export default async function CardPage({ params }: Props) {
   const { id } = await params
   const supabase = await createClient()
 
-  const cardData = await getCardData(supabase, id);
+  try {
+    const cardData = await getCardData(supabase, id);
 
-  if (!cardData) notFound();
+    if (!cardData) notFound();
 
-  const { card, fields, phases, conditionals, activities } = cardData;
+    const { card, fields, phases, conditionals, activities } = cardData;
 
-  return (
-    <CardDetail
-      card={card as Card}
-      fields={fields as PipeField[]}
-      phases={phases as Phase[]}
-      conditionals={conditionals as FieldConditional[]}
-      activities={activities as CardActivity[]}
-    />
-  )
+    return (
+      <CardDetail
+        card={card as Card}
+        fields={fields as PipeField[]}
+        phases={phases as Phase[]}
+        conditionals={conditionals as FieldConditional[]}
+        activities={activities as CardActivity[]}
+      />
+    )
+  } catch (error: any) {
+    console.error("Error in CardPage:", error);
+    notFound();
+  }
 }

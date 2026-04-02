@@ -44,6 +44,7 @@ export interface Phase {
 export interface PipeField {
   id: string
   pipe_id: string
+  phase_id: string | null
   pipefy_id: string | null
   label: string
   key: string

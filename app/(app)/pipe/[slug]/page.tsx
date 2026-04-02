@@ -4,24 +4,27 @@ import { KanbanBoard } from '@/components/kanban/KanbanBoard'
 import type { BoardData, Pipe, Phase, Card, PipeField } from '@/types/domain'
 
 interface Props {
-  params: Promise<{ slug: string }>
+  params: { slug: string }
 }
 
 export default async function PipePage({ params }: Props) {
-  const { slug } = await params
+  const { slug } = params.slug
   const supabase = await createClient()
 
   // Load pipe
-  const { data: pipe } = await supabase
+  const { data: pipe, error: pipeError } = await supabase
     .from('pipes')
     .select('*')
     .eq('slug', slug)
     .single()
 
-  if (!pipe) notFound()
+  if (pipeError || !pipe) {
+    notFound()
+    return;
+  }
 
   // Load phases, cards, and fields in parallel
-  const [{ data: phases }, { data: cards }, { data: fields }] = await Promise.all([
+  const [{ data: phases, error: phasesError }, { data: cards, error: cardsError }, { data: fields, error: fieldsError }] = await Promise.all([
     supabase
       .from('phases')
       .select('*')
@@ -39,11 +42,16 @@ export default async function PipePage({ params }: Props) {
       .order('position'),
   ])
 
+  if (phasesError || cardsError || fieldsError) {
+    console.error("Error fetching data:", phasesError, cardsError, fieldsError);
+    return null;
+  }
+
   const boardData: BoardData = {
-    pipe: pipe as unknown as Pipe,
-    phases: (phases ?? []) as unknown as Phase[],
-    cards: (cards ?? []) as unknown as Card[],
-    fields: (fields ?? []) as unknown as PipeField[],
+    pipe: pipe as Pipe,
+    phases: (phases ?? []) as Phase[],
+    cards: (cards ?? []) as Card[],
+    fields: (fields ?? []) as PipeField[],
   }
 
   return (

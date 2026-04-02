@@ -18,6 +18,15 @@ const CITY_COLORS: Record<string, string> = {
   'Salvador':      'bg-orange-100 text-orange-700',
   'Rio de Janeiro':'bg-green-100 text-green-700',
   'Curitiba':      'bg-cyan-100 text-cyan-700',
+  'Itapema':       'bg-teal-100 text-teal-700',
+  'Balneário':     'bg-sky-100 text-sky-700',
+  'Bombinhas':     'bg-indigo-100 text-indigo-700',
+}
+function cityColor(cidade: string) {
+  for (const [k, v] of Object.entries(CITY_COLORS)) {
+    if (cidade.includes(k)) return v
+  }
+  return 'bg-slate-100 text-slate-600'
 }
 
 function relativeTime(dateStr: string): string {
@@ -36,15 +45,16 @@ export function KanbanCard({ card, fields, isDragging }: Props) {
 
   const style = { transform: CSS.Transform.toString(transform), transition }
 
-  const f = (key: string) => card.fields[key] as string | undefined
+  const f = (...keys: string[]) => { for (const k of keys) { const v = card.fields[k]; if (v) return String(v) } return undefined }
 
-  const codigo    = f('codigo_imovel')
-  const anfitriao = f('nome_proprietario')
-  const cidade    = f('cidade')
+  const codigo    = f('im_vel', 'c_digo_do_im_vel', 'codigo_imovel')
+  const anfitriao = f('anfitri_o_respons_vel', 'datas_dispon_veis', 'nome_proprietario')
+  const cidade    = f('cidade', 'location')
+  const etiqueta  = f('etiqueta')
   const validade  = f('validade')
 
   const isValidadeOverdue = validade && new Date(validade) < new Date()
-  const cityColor = cidade ? (CITY_COLORS[cidade] ?? 'bg-slate-100 text-slate-600') : null
+  const cidadeColor = cidade ? cityColor(cidade) : null
 
   return (
     <div
@@ -71,9 +81,14 @@ export function KanbanCard({ card, fields, isDragging }: Props) {
               {codigo}
             </span>
           )}
-          {cidade && cityColor && (
-            <span className={cn('text-[11px] font-medium rounded-md px-1.5 py-0.5', cityColor)}>
-              {cidade}
+          {cidade && cidadeColor && (
+            <span className={cn('text-[11px] font-medium rounded-md px-1.5 py-0.5', cidadeColor)}>
+              {cidade.split(',')[0]}
+            </span>
+          )}
+          {etiqueta && (
+            <span className="text-[11px] font-medium bg-violet-100 text-violet-700 rounded-md px-1.5 py-0.5">
+              {etiqueta}
             </span>
           )}
           {card.is_standby && (

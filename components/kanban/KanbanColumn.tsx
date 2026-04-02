@@ -18,7 +18,7 @@ export function KanbanColumn({ phase, cards, fields, pipeId }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id: phase.id })
 
   return (
-    <div className="flex flex-col flex-shrink-0 w-[260px]">
+    <div className="flex flex-col flex-shrink-0 w-[300px]">
       {/* Column header */}
       <div className="flex items-center justify-between mb-2 px-0.5">
         <div className="flex items-center gap-1.5 min-w-0">

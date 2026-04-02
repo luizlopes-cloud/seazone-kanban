@@ -12,20 +12,39 @@ interface Props {
   isDragging?: boolean
 }
 
+const CITY_COLORS: Record<string, string> = {
+  'Florianópolis': 'bg-blue-100 text-blue-700',
+  'São Paulo':     'bg-purple-100 text-purple-700',
+  'Salvador':      'bg-orange-100 text-orange-700',
+  'Rio de Janeiro':'bg-green-100 text-green-700',
+  'Curitiba':      'bg-cyan-100 text-cyan-700',
+}
+
+function relativeTime(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const min = Math.floor(diff / 60000)
+  if (min < 60) return `${min}min atrás`
+  const h = Math.floor(min / 60)
+  if (h < 24) return `${h}h atrás`
+  return `${Math.floor(h / 24)}d atrás`
+}
+
 export function KanbanCard({ card, fields, isDragging }: Props) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging: isSortableDragging } = useSortable({
     id: card.id,
   })
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  }
+  const style = { transform: CSS.Transform.toString(transform), transition }
 
-  const codigoField = fields.find((f) => f.key === 'codigo_imovel')
-  const codigo = codigoField ? (card.fields[codigoField.key] as string) : null
+  const f = (key: string) => card.fields[key] as string | undefined
 
-  const isOverdue = card.due_date && new Date(card.due_date) < new Date()
+  const codigo    = f('codigo_imovel')
+  const anfitriao = f('nome_proprietario')
+  const cidade    = f('cidade')
+  const validade  = f('validade')
+
+  const isValidadeOverdue = validade && new Date(validade) < new Date()
+  const cityColor = cidade ? (CITY_COLORS[cidade] ?? 'bg-slate-100 text-slate-600') : null
 
   return (
     <div
@@ -35,47 +54,70 @@ export function KanbanCard({ card, fields, isDragging }: Props) {
       {...listeners}
       className={cn(
         'group relative bg-card rounded-xl border border-border cursor-grab active:cursor-grabbing select-none',
-        'shadow-sm hover:shadow-md transition-all duration-150',
+        'shadow-sm hover:shadow-[0_8px_24px_-8px_rgba(20,29,46,0.15)] transition-all duration-150',
         (isDragging || isSortableDragging) && 'opacity-40 shadow-lg rotate-1',
       )}
     >
-      {/* Left accent bar for standby */}
+      {/* Standby left bar */}
       {card.is_standby && (
-        <div className="absolute left-0 top-2 bottom-2 w-0.5 rounded-full bg-amber-400" />
+        <div className="absolute left-0 top-3 bottom-3 w-[3px] rounded-r-full bg-amber-400" />
       )}
 
-      <div className="p-3">
+      <div className="p-3.5 pl-4">
+        {/* Top row: code + city tag */}
+        <div className="flex items-center gap-1.5 mb-2 flex-wrap">
+          {codigo && (
+            <span className="text-[11px] font-mono font-semibold bg-muted text-muted-foreground rounded-md px-1.5 py-0.5">
+              {codigo}
+            </span>
+          )}
+          {cidade && cityColor && (
+            <span className={cn('text-[11px] font-medium rounded-md px-1.5 py-0.5', cityColor)}>
+              {cidade}
+            </span>
+          )}
+          {card.is_standby && (
+            <span className="text-[11px] font-medium bg-amber-50 text-amber-600 rounded-md px-1.5 py-0.5 ml-auto">
+              ⏸ Stand-by
+            </span>
+          )}
+        </div>
+
         {/* Title */}
-        <p className="text-[13px] font-medium text-foreground leading-snug line-clamp-2">
+        <p className="text-[14px] font-semibold text-foreground leading-snug line-clamp-2 mb-2">
           {card.title}
         </p>
 
-        {/* Code tag */}
-        {codigo && (
-          <span className="inline-block mt-1.5 text-[11px] font-mono bg-muted text-muted-foreground rounded px-1.5 py-0.5">
-            {codigo}
-          </span>
-        )}
-
-        {/* Footer row */}
-        {(card.due_date || card.is_standby) && (
-          <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/60">
-            {card.due_date && (
-              <span className={cn(
-                'text-[11px] flex items-center gap-1',
-                isOverdue ? 'text-destructive font-medium' : 'text-muted-foreground'
-              )}>
-                {isOverdue ? '⚠' : '📅'} {new Date(card.due_date).toLocaleDateString('pt-BR')}
-              </span>
-            )}
-            {card.is_standby && (
-              <span className="text-[11px] text-amber-600 font-medium ml-auto">Stand-by</span>
-            )}
+        {/* Anfitrião */}
+        {anfitriao && (
+          <div className="flex items-center gap-1.5 mb-2">
+            <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary shrink-0">
+              {anfitriao.charAt(0).toUpperCase()}
+            </div>
+            <span className="text-[12px] text-muted-foreground truncate">{anfitriao}</span>
           </div>
         )}
+
+        {/* Footer: validade + updated_at */}
+        <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/60 gap-2">
+          <div className="flex items-center gap-1 min-w-0">
+            {validade ? (
+              <span className={cn(
+                'text-[11px] font-medium flex items-center gap-1',
+                isValidadeOverdue ? 'text-destructive' : 'text-muted-foreground'
+              )}>
+                {isValidadeOverdue ? '⚠' : '📋'} Val. {new Date(validade).toLocaleDateString('pt-BR')}
+              </span>
+            ) : (
+              <span className="text-[11px] text-border">Sem validade</span>
+            )}
+          </div>
+          <span className="text-[10px] text-muted-foreground/60 shrink-0">
+            {relativeTime(card.updated_at)}
+          </span>
+        </div>
       </div>
 
-      {/* Invisible link overlay */}
       <Link
         href={`/card/${card.id}`}
         className="absolute inset-0 rounded-xl"

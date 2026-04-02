@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -31,13 +31,17 @@ export function CardDetail({ card, fields, phases, conditionals, activities }: P
   const visibleFieldIds = evaluateConditionals(conditionals, fieldValues, fields.map((f) => f.id))
 
   const currentPhase = phases.find((p) => p.id === card.phase_id)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  function handleFieldChange(fieldKey: string, value: unknown) {
+  const handleFieldChange = useCallback((fieldKey: string, value: unknown) => {
     setFieldValues((prev) => ({ ...prev, [fieldKey]: value }))
-    startTransition(async () => {
-      await updateCardField(card.id, fieldKey, value)
-    })
-  }
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      startTransition(async () => {
+        await updateCardField(card.id, fieldKey, value)
+      })
+    }, 600)
+  }, [card.id])
 
   function handlePhaseChange(newPhaseId: string | null) {
     if (!newPhaseId) return

@@ -121,9 +121,6 @@ export function KanbanCard({ card, fields, isDragging }: Props) {
       <Link
         href={`/card/${card.id}`}
         className="absolute inset-0 rounded-xl"
-        onClick={(e) => e.stopPropagation()}
-        onMouseDown={(e) => e.stopPropagation()}
-        onPointerDown={(e) => e.stopPropagation()}
         draggable={false}
         tabIndex={-1}
         aria-label={`Abrir card ${card.title}`}
